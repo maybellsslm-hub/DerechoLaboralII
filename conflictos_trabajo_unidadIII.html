@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unidad III — Los Conflictos de Trabajo y su Solución</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1628;
+    --bg2: #0f1e38;
+    --navy: #132240;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.13);
+    --accent: #c9a84c;
+    --accent2: #8bafd4;
+    --white: #f0f4ff;
+    --muted: #8a9fc0;
+    --red: #c9a84c;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+
+  /* ── PILL TOPBAR ── */
+  .topbar {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 32px);
+    max-width: 1600px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 10px 20px 10px 16px;
+    gap: 16px;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+    color: var(--white);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .topbar-left .icon { font-size: 1.2rem; }
+  .topbar-title {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-family: var(--sans);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    padding: 7px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: var(--sans);
+    transition: background 0.2s, transform 0.1s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.04); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
+  .slide-counter {
+    color: var(--muted);
+    font-size: 0.82rem;
+    min-width: 52px;
+    text-align: center;
+  }
+
+  /* ── STAGE ── */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 10px 46px;
+  }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: absolute;
+    width: 100%;
+    max-width: 1600px;
+    height: calc(100vh - 118px);
+    max-height: 900px;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(80px) scale(0.97);
+    transition: opacity 0.55s cubic-bezier(.4,0,.2,1), transform 0.55s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: all;
+    z-index: 10;
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-80px) scale(0.97);
+    z-index: 5;
+  }
+  .slide.enter-right {
+    transform: translateX(80px) scale(0.97);
+  }
+  .slide.enter-left {
+    transform: translateX(-80px) scale(0.97);
+  }
+
+  /* BG layers */
+  .slide-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--bg2);
+    z-index: 0;
+  }
+  .slide-bg img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.28;
+    filter: saturate(0.7);
+  }
+  .slide-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(11,22,40,0.92) 40%, rgba(11,22,40,0.6));
+  }
+
+  /* Glow circle */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .slide-inner {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 52px 24px;
+    overflow: hidden;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  .label {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1.hero {
+    font-family: var(--serif);
+    font-size: clamp(3rem, 5.5vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.0;
+    color: var(--white);
+  }
+  h1.hero em { font-style: italic; color: var(--accent); }
+  h2.slide-title {
+    font-family: var(--serif);
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin-bottom: 22px;
+  }
+  p.body-text {
+    font-size: 1.1rem;
+    color: rgba(240,244,255,0.85);
+    line-height: 1.65;
+  }
+
+  /* ── GLASS CARD ── */
+  .glass {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 18px 22px;
+  }
+  .glass.accent-left { border-left: 3px solid var(--accent); }
+  .glass.accent-top { border-top: 2px solid var(--accent); }
+
+  /* ── INFO CARD GRID ── */
+  .info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .info-chip {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 10px;
+    padding: 12px 18px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .info-chip .chip-label { font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .info-chip .chip-val { font-size: 1rem; font-weight: 600; color: var(--white); }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    margin-top: 12px;
+  }
+  .data-table thead tr {
+    background: rgba(201,168,76,0.18);
+    border-bottom: 1px solid rgba(201,168,76,0.4);
+  }
+  .data-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    letter-spacing: 0.5px;
+  }
+  .data-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.2s;
+  }
+  .data-table tbody tr:hover { background: rgba(255,255,255,0.05); }
+  .data-table tbody td {
+    padding: 11px 16px;
+    color: rgba(240,244,255,0.88);
+    vertical-align: top;
+    line-height: 1.55;
+    font-size: 0.97rem;
+  }
+
+  /* ── TOC LIST ── */
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .toc-item:hover { background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.45); transform: translateX(4px); }
+  .toc-num {
+    background: rgba(201,168,76,0.2);
+    border: 1px solid rgba(201,168,76,0.5);
+    color: var(--accent);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.88rem;
+    flex-shrink: 0;
+  }
+  .toc-text { font-weight: 600; color: var(--white); font-size: 1.1rem; }
+  .toc-sub { font-size: 0.92rem; color: var(--muted); margin-top: 3px; }
+
+  /* ── STEP FLOW ── */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 11px 16px;
+    transition: background 0.2s;
+  }
+  .step:hover { background: rgba(255,255,255,0.08); }
+  .step-num {
+    background: rgba(200,169,110,0.25);
+    color: var(--accent);
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
+  }
+  .step-content h4 { font-size: 1.08rem; color: var(--white); margin-bottom: 3px; font-weight: 600; }
+  .step-content p { font-size: 0.95rem; color: var(--muted); line-height: 1.45; }
+  .plazo {
+    font-size: 0.82rem;
+    background: rgba(201,168,76,0.18);
+    color: var(--accent);
+    border: 1px solid rgba(201,168,76,0.4);
+    padding: 2px 9px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ── FEATURE CARDS ── */
+  .feature-cards { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .feature-card {
+    flex: 1; min-width: 200px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .feature-card h4 { font-size: 1rem; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .feature-card ul { list-style: none; padding: 0; }
+  .feature-card ul li {
+    font-size: 1rem; color: rgba(240,244,255,0.82);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    line-height: 1.4;
+  }
+  .feature-card ul li::before { content: "▸ "; color: var(--accent); font-size: 0.75rem; }
+
+  /* ── PRINCIPLES GRID ── */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .principle-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 2px solid rgba(200,169,110,0.7);
+    border-radius: 10px;
+    padding: 13px 14px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .principle-card:hover { background: rgba(255,255,255,0.09); transform: translateY(-2px); }
+  .principle-card h4 { font-size: 1rem; color: var(--accent); margin-bottom: 5px; font-weight: 600; }
+  .principle-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.4; }
+  .principle-card .base { font-size: 0.78rem; color: rgba(201,168,76,0.85); margin-top: 6px; font-weight: 600; }
+
+  /* ── GLOSARIO ── */
+  .glosario { display: flex; flex-direction: column; gap: 7px; }
+  .glosario-item {
+    display: flex;
+    gap: 14px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+  }
+  .glosario-term { font-weight: 700; color: var(--accent); min-width: 185px; font-size: 1rem; }
+  .glosario-def { font-size: 0.95rem; color: rgba(240,244,255,0.82); line-height: 1.5; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.77rem;
+    font-weight: 600;
+  }
+  .badge-green { background: rgba(39,174,96,0.2); color: #6bcf9a; border: 1px solid rgba(39,174,96,0.3); }
+  .badge-blue { background: rgba(139,175,212,0.15); color: var(--accent2); border: 1px solid rgba(139,175,212,0.3); }
+
+  /* ── NOTE BOX ── */
+  .note-box {
+    background: rgba(201,168,76,0.1);
+    border-left: 3px solid var(--accent);
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 1rem;
+    font-style: italic;
+    color: rgba(240,244,255,0.8);
+    line-height: 1.5;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    margin-top: 18px;
+    font-weight: 600;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* ── TWO COL ── */
+  .two-col { display: flex; gap: 16px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 200px; }
+
+  /* ── SLIDE FOOTER ── */
+  .slide-footer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 48px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.88rem;
+    color: var(--muted);
+    background: rgba(11,22,40,0.5);
+    backdrop-filter: blur(8px);
+  }
+  .slide-footer .page-num {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--accent);
+    padding: 3px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  /* ── SCROLLABLE AREA ── */
+  .scrollable {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+  }
+  .scrollable::-webkit-scrollbar { width: 4px; }
+  .scrollable::-webkit-scrollbar-track { background: transparent; }
+  .scrollable::-webkit-scrollbar-thumb { background: rgba(200,169,110,0.3); border-radius: 4px; }
+
+  /* ── DOT NAV ── */
+  .dot-nav {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 200;
+  }
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s, width 0.3s;
+    border: none;
+  }
+  .dot.active {
+    background: var(--accent);
+    width: 26px;
+    border-radius: 5px;
+  }
+
+  /* ── COVER SPECIFIC ── */
+  .cover-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    padding: 44px 52px;
+  }
+  .cover-inner .big-tag {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cover-inner .big-tag::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .cover-inner .hero-text {
+    font-family: var(--serif);
+    font-size: clamp(3rem, 5.5vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.0;
+    color: var(--white);
+    margin-bottom: 24px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+  .cover-inner .hero-text em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .cover-info-bar {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+  }
+  .cover-info-bar .ci { }
+  .cover-info-bar .ci-lbl { font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+  .cover-info-bar .ci-val { font-size: 1.05rem; color: var(--white); font-weight: 500; margin-top: 2px; }
+
+  /* HERO IMAGE RIGHT */
+  .hero-img {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 52%;
+    overflow: hidden;
+    border-radius: 0 20px 20px 0;
+    z-index: 1;
+  }
+  .hero-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.45;
+    filter: saturate(0.6);
+  }
+  .hero-img::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--bg2) 0%, transparent 60%);
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="icon">⚖️</span>
+    <span>UCADE · Derecho Laboral II · 2026</span>
+  </div>
+  <div class="topbar-title" id="topbarTitle">Unidad III — Los Conflictos de Trabajo y su Solución</div>
+  <div class="topbar-right">
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 12</span>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+  </div>
+</div>
+
+<!-- STAGE -->
+<div class="stage">
+
+  <!-- ═══ SLIDE 1: PORTADA ═══ -->
+  <div class="slide active" id="slide-1">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=80" alt="">
+    </div>
+    <div class="glow" style="width:400px;height:400px;background:rgba(200,169,110,0.12);bottom:-80px;right:100px;"></div>
+    <div class="glow" style="width:300px;height:300px;background:rgba(30,60,120,0.3);top:-60px;left:-60px;"></div>
+    <div class="hero-img">
+      <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=900&q=80" alt="Justicia">
+    </div>
+    <div class="cover-inner" style="position:relative;z-index:2;">
+      <div class="big-tag">Unidad III · Derecho Laboral II</div>
+      <div class="hero-text">Los <em>Conflictos</em><br>de Trabajo<br>y su Solución</div>
+      <div class="cover-info-bar">
+        <div class="ci"><div class="ci-lbl">Asignatura</div><div class="ci-val">Derecho Laboral II</div></div>
+        <div class="ci"><div class="ci-lbl">Base Legal</div><div class="ci-val">Ley 16-92 · Convenios OIT</div></div>
+        <div class="ci"><div class="ci-lbl">Institución</div><div class="ci-val">UCADE</div></div>
+        <div class="ci"><div class="ci-lbl">Facilitadora</div><div class="ci-val">Ivelisse María Ureña</div></div>
+        <div class="ci"><div class="ci-lbl">Año</div><div class="ci-val">2026</div></div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Facultad de Ciencias Jurídicas · UCADE</span>
+      <span class="page-num">01 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 2: ÍNDICE ═══ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0b1628,#111f3a);"></div>
+    <div class="glow" style="width:500px;height:500px;background:rgba(20,50,100,0.25);top:-150px;right:-100px;"></div>
+    <div class="slide-inner">
+      <div class="label">Estructura de Contenidos</div>
+      <h2 class="slide-title">Índice de la Unidad III</h2>
+      <div class="scrollable">
+        <ul class="toc-list">
+          <li class="toc-item" onclick="goToSlide(3)">
+            <div class="toc-num">3.1</div>
+            <div><div class="toc-text">Los Conflictos de Trabajo</div><div class="toc-sub">Concepto · Naturaleza jurídica · Marco constitucional y convencional</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(4)">
+            <div class="toc-num">3.2</div>
+            <div><div class="toc-text">Clasificación de los Conflictos</div><div class="toc-sub">Individuales · Colectivos · Jurídicos vs. Económicos</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(5)">
+            <div class="toc-num">3.2</div>
+            <div><div class="toc-text">Conflictos Jurídicos vs. Económicos</div><div class="toc-sub">Comparativa detallada · Criterios · Jurisprudencia SCJ</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(6)">
+            <div class="toc-num">3.3</div>
+            <div><div class="toc-text">Solución de los Conflictos</div><div class="toc-sub">Conciliación · Mediación · Arbitraje · Vía judicial</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(7)">
+            <div class="toc-num">3.3</div>
+            <div><div class="toc-text">Comparación de Mecanismos</div><div class="toc-sub">Ventajas · Desventajas · Idoneidad</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(8)">
+            <div class="toc-num">3.4</div>
+            <div><div class="toc-text">Procedimiento Conflictos Colectivos</div><div class="toc-sub">Las 7 etapas obligatorias con plazos y base legal</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(9)">
+            <div class="toc-num">3.4</div>
+            <div><div class="toc-text">Huelga y Servicios Esenciales</div><div class="toc-sub">Huelga legal vs. ilegal · Paro patronal · Categorías</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(10)">
+            <div class="toc-num">3.5</div>
+            <div><div class="toc-text">Derecho Procesal del Trabajo</div><div class="toc-sub">Principios · Jurisdicción · Plazos · Recursos</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(11)">
+            <div class="toc-num">GL</div>
+            <div><div class="toc-text">Glosario de Términos</div><div class="toc-sub">Definiciones clave de la Unidad III</div></div>
+          </li>
+          <li class="toc-item" onclick="goToSlide(12)">
+            <div class="toc-num">MN</div>
+            <div><div class="toc-text">Marco Normativo Comparado</div><div class="toc-sub">Legislación dominicana vs. Convenios OIT</div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>⚖️ UCADE · Derecho Laboral II</span>
+      <span class="page-num">02 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 3: 3.1 CONFLICTOS ═══ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&q=80" alt="">
+    </div>
+    <div class="glow" style="width:350px;height:350px;background:rgba(200,169,110,0.1);bottom:-50px;right:80px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.1</div>
+      <h2 class="slide-title">Los Conflictos de Trabajo</h2>
+      <div class="scrollable">
+        <div class="glass accent-left" style="margin-bottom:18px;">
+          <div style="font-size:0.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Conflicto Económico — Art. 395 CT (Ley 16-92)</div>
+          <p class="body-text" style="font-size:0.97rem;">«Conflicto económico es el que se suscita entre uno o más sindicatos de trabajadores y uno o más empleadores o uno o más sindicatos de empleadores, con el objeto de que se establezcan nuevas condiciones de trabajo o se modifiquen las vigentes.» Los conflictos jurídicos son los que versan sobre la aplicación o interpretación de normas vigentes, cuya solución compete a los tribunales de trabajo (Arts. 486–505 CT).</p>
+        </div>
+        <div class="two-col">
+          <div class="col">
+            <div class="feature-card">
+              <h4>🔍 Características Especiales</h4>
+              <ul>
+                <li>Dimanan de la relación laboral</li>
+                <li>Pueden afectar intereses colectivos</li>
+                <li>Generan impacto social y económico</li>
+                <li>Requieren normas procesales propias</li>
+                <li>Se rigen por principios tuitivos</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col">
+            <div class="feature-card" style="border-top-color:var(--accent2);">
+              <h4 style="color:var(--accent2);">⚖️ Diferencia con Conflictos Civiles</h4>
+              <ul>
+                <li>Las partes son estructuralmente desiguales</li>
+                <li>El orden público laboral limita la autonomía</li>
+                <li>Existen organismos especializados</li>
+                <li>Los plazos procesales son más breves</li>
+                <li>La carga de la prueba se invierte en algunos casos</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="note-box">
+          <strong>Principio VIII CT:</strong> «En caso de concurrencia de varias normas legales o convencionales, prevalecerá la más favorable al trabajador. Si hay duda en la interpretación o alcance de la ley, se decidirá en el sentido más favorable al trabajador.» (<em>in dubio pro operario</em>). El Principio XIII CT establece la conciliación como etapa obligatoria previa en todo proceso laboral.
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.1 — Arts. 395–417 CT · Principios III, VIII y XIII CT</span><span class="page-num">03 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4: 3.2 CLASIFICACIÓN ═══ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0b1628,#0d1e3a);"></div>
+    <div class="glow" style="width:400px;height:400px;background:rgba(139,175,212,0.08);top:-100px;right:-80px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.2</div>
+      <h2 class="slide-title">Clasificación de los Conflictos</h2>
+      <div class="scrollable">
+        <div class="glass accent-left" style="margin-bottom:16px;">
+          <div style="font-size:0.75rem;letter-spacing:1.5px;color:var(--accent);margin-bottom:6px;">Arts. 395–417 CT · Libro Sexto</div>
+          <p style="font-size:0.92rem;color:rgba(240,244,255,0.85);line-height:1.5;">El Libro Sexto del CT estructura los conflictos en: económicos (Arts. 395–400), huelgas (Arts. 401–412) y paros (Arts. 413–417). Los conflictos jurídicos (aplicación de normas) no están en el Libro Sexto, sino que se resuelven ante los tribunales de trabajo según el procedimiento de los Arts. 486–705 CT.</p>
+        </div>
+        <div class="section-title">Conflictos Individuales de Trabajo</div>
+        <table class="data-table">
+          <thead><tr><th>Tipo</th><th>Partes</th><th>Ejemplos Frecuentes</th><th>Órgano Competente</th></tr></thead>
+          <tbody>
+            <tr><td>Individual jurídico</td><td>Un trabajador vs. empleador</td><td>Salarios caídos, preaviso, cesantía, vacaciones</td><td>Juzgado de Trabajo</td></tr>
+            <tr><td>Individual económico</td><td>Un trabajador vs. empleador</td><td>Revisión de condiciones contractuales</td><td>Negociación / Juzgado</td></tr>
+            <tr><td>Pluri-individual</td><td>Varios trabajadores vs. empleador</td><td>Reclamación conjunta por beneficios</td><td>Juzgado de Trabajo</td></tr>
+          </tbody>
+        </table>
+        <div class="section-title">Conflictos Colectivos</div>
+        <table class="data-table">
+          <thead><tr><th>Subtipo</th><th>Promotor</th><th>Objeto</th><th>Procedimiento</th></tr></thead>
+          <tbody>
+            <tr><td>Colectivo jurídico</td><td>Sindicato o grupo</td><td>Aplicación de norma vigente</td><td>Juzgado de Trabajo</td></tr>
+            <tr><td>Colectivo económico</td><td>Sindicato o grupo</td><td>Creación/modificación de condiciones</td><td>Negociación — conciliación — arbitraje</td></tr>
+            <tr><td>Del sector público</td><td>Org. trabajadores Estado</td><td>Condiciones servidores públicos</td><td>Ley 41-08 (Función Pública) · Principio III CT</td></tr>
+          </tbody>
+        </table>
+        <div class="note-box">📌 <strong>Principio XIII CT:</strong> «El Estado garantiza a empleadores y trabajadores, para la solución de sus conflictos, la creación y el mantenimiento de jurisdicciones especiales. Se instituye como obligatorio el preliminar de la conciliación. Esta puede ser promovida por los jueces en todo estado de causa.» (Arts. 487, 508–520 CT).
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.2 — Arts. 395–417 CT (Libro VI) · Arts. 486–505 CT (Libro VII)</span><span class="page-num">04 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5: JURÍDICO vs ECONÓMICO ═══ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1521791055366-0d553872952f?w=1400&q=80" alt="">
+    </div>
+    <div class="glow" style="width:300px;height:300px;background:rgba(200,169,110,0.09);bottom:-40px;left:50px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.2.3</div>
+      <h2 class="slide-title">Conflictos Jurídicos vs. Económicos</h2>
+      <div class="scrollable">
+        <table class="data-table">
+          <thead><tr><th>Criterio</th><th>Conflicto Jurídico</th><th>Conflicto Económico</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Definición</strong></td><td>Controversia sobre derechos ya reconocidos</td><td>Controversia sobre condiciones futuras</td></tr>
+            <tr><td><strong>Objeto</strong></td><td>Aplicación o interpretación de norma</td><td>Creación o modificación de norma</td></tr>
+            <tr><td><strong>Naturaleza</strong></td><td>Declarativa / ejecutiva</td><td>Constitutiva / normativa</td></tr>
+            <tr><td><strong>Órgano competente</strong></td><td>Juzgados de Trabajo (Arts. 467–472 CT)</td><td>Avenimiento directo · Conciliación · Arbitraje (Art. 397 CT)</td></tr>
+            <tr><td><strong>Tipo de resolución</strong></td><td>Sentencia judicial (Arts. 533–540 CT)</td><td>Avenimiento · Acta conciliación · Laudo arbitral (Arts. 678, 696–699 CT)</td></tr>
+            <tr><td><strong>Efecto</strong></td><td>Inter partes con cosa juzgada</td><td>Normativo: equivale a convenio colectivo (Art. 699 CT)</td></tr>
+            <tr><td><strong>Base legal</strong></td><td>Arts. 486–705 CT (Libro VII, Tít. II)</td><td>Arts. 395–400 CT (Libro VI) · Arts. 674–700 CT (Libro VII, Tít. X)</td></tr>
+            <tr><td><strong>Prescripción</strong></td><td>1 mes (horas extras, Art. 701); 2 meses (despido/cesantía, Art. 702); 3 meses (demás acciones, Art. 703)</td><td>Arts. 399–400: mínimo 1 año, máximo 3 años de vigencia del acuerdo</td></tr>
+          </tbody>
+        </table>
+        <div class="note-box">
+          <strong>Art. 397 CT:</strong> «Los conflictos económicos se resuelven por avenimiento directo, o bien por conciliación administrativa o el arbitraje, según los procedimientos prescritos en el Título X del Libro Séptimo de este Código.» El laudo arbitral no está sujeto a ningún recurso (Art. 698 CT) y produce los efectos de un convenio colectivo (Art. 699 CT).
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.2.3 — Arts. 395–400 CT (econ.) · Arts. 486–705 CT (jur.) · Arts. 701–704 CT (prescripción)</span><span class="page-num">05 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 6: 3.3 SOLUCIÓN ═══ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0b1628,#0f1e38);"></div>
+    <div class="glow" style="width:450px;height:450px;background:rgba(200,169,110,0.07);top:-100px;right:-120px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.3</div>
+      <h2 class="slide-title">Solución de los Conflictos de Trabajo</h2>
+      <div class="scrollable">
+        <div class="glass accent-left" style="margin-bottom:16px;">
+          <div style="font-size:0.75rem;letter-spacing:1.5px;color:var(--accent);margin-bottom:6px;">Arts. 397 CT · Principio XIII CT · Arts. 487, 674–700 CT</div>
+          <p style="font-size:0.92rem;color:rgba(240,244,255,0.85);line-height:1.5;">Art. 397 CT: «Los conflictos económicos se resuelven por avenimiento directo, o bien por conciliación administrativa o el arbitraje.» El Principio XIII CT instituye la conciliación como etapa obligatoria previa (Art. 487 CT). Para conflictos jurídicos individuales, el Juzgado de Trabajo realiza la conciliación antes del juicio.</p>
+        </div>
+        <div class="section-title">Modalidades de Conciliación Laboral</div>
+        <table class="data-table">
+          <thead><tr><th>Modalidad</th><th>Sede</th><th>Conciliador</th><th>Base Legal</th><th>Efecto Jurídico</th></tr></thead>
+          <tbody>
+            <tr><td>Judicial previa</td><td>Juzgado de Trabajo</td><td>Juez laboral</td><td>Arts. 487, 508–520 CT</td><td>Acta con efectos de cosa juzgada</td></tr>
+            <tr><td>Administrativa (económica)</td><td>Ministerio de Trabajo</td><td>Mediador designado por el MT</td><td>Arts. 674–679 CT</td><td>Acta de conciliación (Art. 678 CT)</td></tr>
+            <tr><td>Por convenio colectivo</td><td>Empresa / sede sindical</td><td>Representantes de las partes</td><td>Arts. 103–128 CT</td><td>Convenio colectivo vinculante</td></tr>
+            <tr><td>Arbitraje (conflicto econ.)</td><td>Tribunal arbitral (3 árbitros)</td><td>Árbitros designados (Art. 680 CT)</td><td>Arts. 680–700 CT</td><td>Laudo = convenio colectivo (Art. 699 CT)</td></tr>
+          </tbody>
+        </table>
+        <div class="section-title">Mediación vs. Arbitraje</div>
+        <table class="data-table">
+          <thead><tr><th>Criterio</th><th>Mediación</th><th>Arbitraje Voluntario</th><th>Arbitraje Obligatorio</th></tr></thead>
+          <tbody>
+            <tr><td>Carácter</td><td>Conciliación voluntaria por mediador</td><td>Voluntario — designan 3 árbitros</td><td>Presunto en servicios esenciales</td></tr>
+            <tr><td>Resultado</td><td>Acta de conciliación (Art. 678 CT)</td><td>Laudo arbitral (Arts. 696–699 CT)</td><td>Laudo — no sujeto a recurso (Art. 698 CT)</td></tr>
+            <tr><td>Impugnación</td><td>No aplica (libre rechazo)</td><td>Art. 698 CT: el laudo NO admite recurso</td><td>Art. 698 CT: irrecurrible</td></tr>
+            <tr><td>Base legal RD</td><td>Arts. 674–679 CT (Tít. X, Cap. I)</td><td>Arts. 680–700 CT (Tít. X, Cap. II)</td><td>Arts. 403–404 CT · Art. 680 CT</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.3 — Arts. 487, 674–700 CT · Principio XIII CT</span><span class="page-num">06 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 7: COMPARACIÓN MECANISMOS ═══ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1400&q=80" alt="">
+    </div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.3.4</div>
+      <h2 class="slide-title">Comparación de Mecanismos de Solución</h2>
+      <div class="scrollable">
+        <table class="data-table">
+          <thead><tr><th>Mecanismo</th><th>Ventajas</th><th>Desventajas</th><th>Idoneidad</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Negociación directa</strong></td><td>Rápida, económica, preserva relación laboral</td><td>Puede fracasar por desequilibrio de poder</td><td>Conflictos de baja complejidad</td></tr>
+            <tr><td><strong>Conciliación administrativa (MT)</strong></td><td>Gratuita; mediador designado en 48h (Art. 675 CT); acta con valor legal (Art. 678 CT)</td><td>Mediador no puede imponer solución</td><td>Conflictos económicos colectivos (Arts. 674–679 CT)</td></tr>
+            <tr><td><strong>Conciliación judicial previa</strong></td><td>Obligatoria (Art. 487 CT); acta con efectos de cosa juzgada</td><td>Mayor formalidad; requiere proceso judicial</td><td>Conflictos jurídicos individuales ante juzgados</td></tr>
+            <tr><td><strong>Avenimiento directo</strong></td><td>Sin intervención estatal; rápido y flexible (Art. 397 CT)</td><td>Puede fracasar por desequilibrio de poder</td><td>Primera etapa obligatoria en conflictos económicos</td></tr>
+            <tr><td><strong>Arbitraje (3 árbitros)</strong></td><td>Laudo ejecutivo e irrecurrible (Art. 698 CT); equivale a convenio colectivo (Art. 699 CT)</td><td>Sin recurso ordinario; definitivo</td><td>Conflictos económicos no resueltos por conciliación (Arts. 680–700 CT)</td></tr>
+            <tr><td><strong>Proceso judicial</strong></td><td>Sentencia con plena eficacia; apelación (Art. 619 CT) y casación (Art. 639 CT)</td><td>Más largo; puede deteriorar relación laboral</td><td>Conflictos jurídicos; calificación de huelgas (Arts. 658–662 CT)</td></tr>
+          </tbody>
+        </table>
+        <div class="note-box">
+          El CT establece el orden: avenimiento directo (Art. 397) → conciliación administrativa ante el MT (Arts. 674–679) → arbitraje de 3 árbitros (Arts. 680–700). <strong>Solo agotadas estas etapas puede declararse la huelga (Art. 407 CT).</strong> El laudo es irrecurrible y equivale a un convenio colectivo (Arts. 698–699 CT).
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.3.4 — Comparación de Mecanismos</span><span class="page-num">07 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 8: PROCEDIMIENTO COLECTIVO ═══ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0a1525,#0d1c35);"></div>
+    <div class="glow" style="width:400px;height:400px;background:rgba(200,169,110,0.08);bottom:-80px;left:200px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.4</div>
+      <h2 class="slide-title">Procedimiento — Conflictos Colectivos</h2>
+      <p class="subtitle">Arts. 395–417 CT (Libro VI) · Arts. 674–700 CT (Libro VII, Tít. X)</p>
+      <div class="scrollable">
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Planteamiento del Conflicto Económico</h4><p>Surge entre sindicato(s) y empleador(es) sobre condiciones de trabajo nuevas o modificación de las vigentes.</p><span class="plazo">Art. 395 CT · Requisitos: Art. 396 CT</span></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Avenimiento Directo</h4><p>Las partes intentan resolver sin intervención del Estado. Es la primera vía obligatoria antes de acudir al MT.</p><span class="plazo">Art. 397 CT · Sin plazo fijo</span></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Solicitud de Conciliación Administrativa al MT</h4><p>La parte interesada solicita la mediación del Ministerio de Trabajo mediante escrito con todos los requisitos.</p><span class="plazo">Art. 674 CT · Solicitud escrita</span></div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-content"><h4>Mediación/Conciliación ante el MT</h4><p>El MT designa mediador en 48h (Art. 675); mediador cita a las partes a reunión en 3–5 días (Art. 676). En caso de acuerdo, se levanta acta (Art. 678).</p><span class="plazo">Arts. 675–679 CT · 48h designación · reunión 3–5 días</span></div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-content"><h4>Arbitraje (si fracasa la conciliación)</h4><p>Las partes designan 3 árbitros. Los árbitros deliberan y emiten laudo en 8 días. El laudo es irrecurrible y equivale a convenio colectivo.</p><span class="plazo">Arts. 680–700 CT · 8 días para laudo (Art. 696)</span></div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-content"><h4>Huelga (trabajadores) o Paro (empleadores)</h4><p>Solo tras agotar conciliación y sin árbitros designados. Huelga: 10 días preaviso al MT y 51%+ votos (Art. 407). Paro: 15 días preaviso al Departamento de Trabajo (Art. 414).</p><span class="plazo">Arts. 401–412 CT (huelga) · Arts. 413–417 CT (paro)</span></div></div>
+          <div class="step"><div class="step-num">7</div><div class="step-content"><h4>Calificación Judicial · Servicios Esenciales</h4><p>El juez califica la huelga o paro como legal o ilegal (Arts. 658–662 CT). En servicios esenciales (comunicaciones, agua, electricidad, hospitales), no se permiten huelgas ni paros (Arts. 403–404 CT).</p><span class="plazo">Arts. 403–404 CT (prohibición) · Art. 680 CT (árbitros presuntos)</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.4 — Arts. 395–417 CT · Arts. 674–700 CT · Arts. 658–662 CT</span><span class="page-num">08 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 9: HUELGA Y SERVICIOS ESENCIALES ═══ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=80" alt="">
+    </div>
+    <div class="slide-inner">
+      <div class="label">Secciones 3.4.2 – 3.4.4</div>
+      <h2 class="slide-title">Huelga, Paro Patronal y Servicios Esenciales</h2>
+      <div class="scrollable">
+        <div class="section-title">Huelga Legal vs. Huelga Ilegal</div>
+        <table class="data-table">
+          <thead><tr><th>Aspecto</th><th>Huelga Legal (Arts. 401, 407–411 CT)</th><th>Huelga Ilegal (Art. 406 y 412 CT)</th></tr></thead>
+          <tbody>
+            <tr><td>Requisito previo</td><td>Agotamiento de conciliación administrativa y no designación de árbitros (Art. 407 num. 2)</td><td>Declarada sin agotar etapas previas o en violación al Art. 407</td></tr>
+            <tr><td>Preaviso</td><td>Mínimo 10 días desde notificación escrita al MT (Art. 407 in fine)</td><td>Sin preaviso o plazo incumplido</td></tr>
+            <tr><td>Decisión</td><td>Votación: más del 51% de los trabajadores de la empresa (Art. 407 num. 3)</td><td>No cumple quórum o promovida con violencia/coacción</td></tr>
+            <tr><td>Efecto sobre contrato</td><td>Suspensión — no pone fin al contrato (Art. 411 CT)</td><td>Termina los contratos de quienes participaron (Art. 412 CT)</td></tr>
+            <tr><td>Consecuencias</td><td>Protección policial pacífica; suspensión trabajos (Art. 408 CT)</td><td>Si es por procedimiento: reintegro voluntario en 24h salva los contratos (Art. 412 CT)</td></tr>
+          </tbody>
+        </table>
+        <div class="section-title">Servicios Esenciales — Categorías</div>
+        <table class="data-table">
+          <thead><tr><th>Categoría</th><th>Ejemplos en R.D. (Art. 404 CT)</th><th>Restricción Aplicable</th><th>Base Legal</th></tr></thead>
+          <tbody>
+            <tr><td>Servicios esenciales</td><td>Comunicaciones, abastecimiento de agua, gas, electricidad, farmacéuticos, hospitales (Art. 404 CT)</td><td>Prohibición de huelga y paro (Art. 403 CT) — árbitros designados por el juez (Art. 680 CT)</td><td>Arts. 403–405 CT · Conv. OIT No. 87</td></tr>
+            <tr><td>Seguridad y orden público</td><td>Servicios cuya huelga afecte la seguridad nacional u orden público</td><td>Huelga ilegal de pleno derecho (Art. 406 CT)</td><td>Art. 406 CT</td></tr>
+            <tr><td>Sector público</td><td>Administración pública central y autónoma</td><td>Regulación especial — Principio III CT; Ley 41-08</td><td>Ley 41-08 · Conv. OIT No. 151</td></tr>
+            <tr><td>Sector privado general</td><td>Comercio, industria, construcción, agro</td><td>Huelga legal cumpliendo Arts. 407–412 CT</td><td>Arts. 401–412 CT · Conv. OIT No. 87</td></tr>
+          </tbody>
+        </table>
+        <div class="note-box">
+          <strong>Arts. 411–412 CT:</strong> La huelga legal no pone fin al contrato de trabajo, solo lo suspende (Art. 411). La huelga ilegal termina los contratos de quienes participaron. Si fue declarada ilegal por razones de procedimiento, los trabajadores que se reintegren voluntariamente dentro de las 24 horas de la sentencia de calificación mantienen sus contratos (Art. 412). La calificación judicial se realiza conforme a los Arts. 658–662 CT.
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.4 — Arts. 422–480 CT · Art. 421 CT · Art. 62.7 Const. 2015</span><span class="page-num">09 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 10: DERECHO PROCESAL ═══ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0a1525,#0e1c34);"></div>
+    <div class="glow" style="width:500px;height:500px;background:rgba(139,175,212,0.06);top:-150px;right:-100px;"></div>
+    <div class="slide-inner">
+      <div class="label">Sección 3.5</div>
+      <h2 class="slide-title">Derecho Procesal del Trabajo</h2>
+      <div class="scrollable">
+        <div class="section-title">Principios del Proceso Laboral</div>
+        <div class="principles-grid">
+          <div class="principle-card"><h4>Conciliación Previa</h4><p>Ningún caso sin intento previo de conciliación.</p><div class="base">Art. 487 CT · Principio XIII</div></div>
+          <div class="principle-card"><h4>Informalidad</h4><p>Ningún acto nulo por vicio de forma.</p><div class="base">Art. 486 CT</div></div>
+          <div class="principle-card"><h4>Celeridad</h4><p>Notificaciones en 24h; plazos breves.</p><div class="base">Arts. 488–495 CT</div></div>
+          <div class="principle-card"><h4>In dubio pro operario</h4><p>Duda se resuelve a favor del trabajador.</p><div class="base">Principio VIII CT</div></div>
+          <div class="principle-card"><h4>Tutela Efectiva</h4><p>Garantía de debido proceso laboral.</p><div class="base">Art. 69 Const. 2015</div></div>
+          <div class="principle-card"><h4>Impulso de Oficio</h4><p>Tribunal puede actuar sin petición de parte.</p><div class="base">Art. 494 CT</div></div>
+          <div class="principle-card"><h4>Irrenunciabilidad</h4><p>Los derechos laborales no pueden ser renunciados.</p><div class="base">Principio V CT</div></div>
+          <div class="principle-card"><h4>Gratuidad / Acceso</h4><p>Secretario asiste al trabajador sin letrado.</p><div class="base">Art. 510 CT</div></div>
+        </div>
+        <div class="section-title">Estructura Jurisdiccional Laboral</div>
+        <table class="data-table">
+          <thead><tr><th>Órgano</th><th>Composición</th><th>Recurso Procedente</th></tr></thead>
+          <tbody>
+            <tr><td>Juzgado de Trabajo (1ra Instancia)</td><td>1 juez presidente + 2 vocales (Art. 467 CT)</td><td>Apelación — salvo cuantía &lt;10 salarios mínimos (Art. 619 CT)</td></tr>
+            <tr><td>Corte de Trabajo (Apelación)</td><td>5 jueces SCJ + 2 vocales (Art. 473 CT, mod. Ley 142-98)</td><td>Casación ante la SCJ — 1 mes (Art. 641 CT)</td></tr>
+            <tr><td>Suprema Corte de Justicia (Casación)</td><td>Pleno de la SCJ</td><td>Recurso de amparo al TC (excepcional)</td></tr>
+            <tr><td>Tribunal Constitucional</td><td>13 jueces (Art. 186 Const. 2015)</td><td>No hay recurso ordinario (instancia final)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>3.5 — Arts. 467–705 CT (Libro VII) · Arts. 619–647 CT (Recursos)</span><span class="page-num">10 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 11: GLOSARIO ═══ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-bg">
+      <img src="https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=1400&q=80" alt="">
+    </div>
+    <div class="slide-inner">
+      <div class="label">Glosario de Términos — Unidad III</div>
+      <h2 class="slide-title">Términos Clave del Derecho Laboral</h2>
+      <div class="scrollable">
+        <div class="glosario">
+          <div class="glosario-item"><div class="glosario-term">Avenimiento directo</div><div class="glosario-def">Primera vía de solución de conflictos económicos: acuerdo entre las partes sin intervención del Estado. Art. 397 CT. El resultado debe indicar fecha de inicio y fin (mínimo 1 año, máximo 3 años, Art. 399 CT).</div></div>
+          <div class="glosario-item"><div class="glosario-term">Arbitraje laboral</div><div class="glosario-def">Mecanismo por el que 3 árbitros designados por las partes emiten un laudo irrecurrible. Arts. 680–700 CT. El laudo equivale a un convenio colectivo (Art. 699 CT) y lo ejecuta el presidente del juzgado de trabajo (Art. 698 CT).</div></div>
+          <div class="glosario-item"><div class="glosario-term">Conciliación</div><div class="glosario-def">En conflictos económicos: mediación ante el MT (Arts. 674–679 CT). En conflictos jurídicos: etapa obligatoria previa al juicio (Art. 487 CT). El Principio XIII CT la instituye como obligatoria.</div></div>
+          <div class="glosario-item"><div class="glosario-term">Conflicto económico</div><div class="glosario-def">«El que se suscita entre uno o más sindicatos de trabajadores y uno o más empleadores, con el objeto de que se establezcan nuevas condiciones de trabajo o se modifiquen las vigentes.» Art. 395 CT.</div></div>
+          <div class="glosario-item"><div class="glosario-term">Huelga</div><div class="glosario-def">«Suspensión voluntaria del trabajo concertada y realizada colectivamente por los trabajadores en defensa de sus intereses comunes.» Art. 401 CT. Requiere: agotar conciliación, 51%+ de votos y 10 días de preaviso al MT (Art. 407 CT). Arts. 401–412 CT · Art. 62.7 Const. 2015.</div></div>
+          <div class="glosario-item"><div class="glosario-term">In dubio pro operario</div><div class="glosario-def">«Si hay duda en la interpretación o alcance de la ley, se decidirá en el sentido más favorable al trabajador.» Principio VIII CT. (Principio V CT establece la irrenunciabilidad de derechos.)</div></div>
+          <div class="glosario-item"><div class="glosario-term">Laudo arbitral</div><div class="glosario-def">Decisión de los 3 árbitros, emitida en 8 días (Art. 696 CT). No está sujeto a ningún recurso (Art. 698 CT) y produce los efectos de un convenio colectivo cuando resuelve un conflicto económico (Art. 699 CT).</div></div>
+          <div class="glosario-item"><div class="glosario-term">Paro patronal</div><div class="glosario-def">«Suspensión voluntaria del trabajo por uno o más empleadores en defensa de sus intereses.» Art. 413 CT. Requiere 15 días de preaviso al Departamento de Trabajo (Art. 414 CT). Arts. 413–417 CT.</div></div>
+          <div class="glosario-item"><div class="glosario-term">Prescripción laboral</div><div class="glosario-def">Arts. 701–705 CT: 1 mes (horas extras, Art. 701); 2 meses (despido, dimisión, cesantía/desahucio, Art. 702); 3 meses (demás acciones, Art. 703). No se pueden reclamar derechos nacidos más de 1 año antes de la terminación del contrato (Art. 704).</div></div>
+          <div class="glosario-item"><div class="glosario-term">Servicio esencial</div><div class="glosario-def">Art. 404 CT: comunicaciones, abastecimiento de agua, gas o electricidad, servicios farmacéuticos, hospitales y análogos. En estos servicios están prohibidas la huelga y el paro (Art. 403 CT).</div></div>
+          <div class="glosario-item"><div class="glosario-term">Tribunal de trabajo</div><div class="glosario-def">Órgano jurisdiccional laboral del Poder Judicial. Juzgado: 1 juez + 2 vocales (Art. 467 CT). Corte de Trabajo: 5 jueces SCJ + 2 vocales (Art. 473 CT, mod. Ley 142-98). Casación: ante la SCJ (Arts. 639–647 CT).</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Glosario — CT Ley 16-92 · Arts. 395–417; 674–700; 701–705 CT</span><span class="page-num">11 / 12</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 12: MARCO NORMATIVO ═══ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#0a1525,#0e1c34);"></div>
+    <div class="glow" style="width:400px;height:400px;background:rgba(200,169,110,0.1);bottom:-60px;right:60px;"></div>
+    <div class="slide-inner">
+      <div class="label">Marco Normativo Comparado</div>
+      <h2 class="slide-title">Legislación Dominicana vs. Convenios OIT</h2>
+      <div class="scrollable">
+        <table class="data-table">
+          <thead><tr><th>Materia</th><th>Norma Dominicana</th><th>Convenio OIT</th><th>Conformidad</th></tr></thead>
+          <tbody>
+            <tr><td>Derecho de huelga</td><td>Arts. 401–412 CT · Art. 62.7 Const. 2015</td><td>Conv. OIT No. 87 (1948), Art. 3</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Negociación colectiva</td><td>Arts. 103–128 CT (Libro II, Tít. I)</td><td>Conv. OIT No. 98 (1949) · Conv. OIT No. 154 (1981)</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Conciliación y arbitraje</td><td>Arts. 674–679 CT (conciliación) · Arts. 680–700 CT (arbitraje)</td><td>Rec. OIT No. 92 (1951)</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Libertad sindical</td><td>Arts. 317–394 CT (Libro V, sindicatos)</td><td>Conv. OIT No. 87 (1948)</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Empleo público</td><td>Ley 41-08 (Función Pública) · Principio III CT</td><td>Conv. OIT No. 151 (1978)</td><td><span class="badge badge-blue">Conforme parcial</span></td></tr>
+            <tr><td>Servicios esenciales</td><td>Arts. 403–404 CT (prohibición) · Art. 680 CT (árbitros presuntos)</td><td>Conv. OIT No. 87 · Principios CELS OIT</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Procedimiento judicial</td><td>Arts. 467–705 CT (Libro VII)</td><td>Conv. OIT No. 29, Art. 1 · Art. 8 Conv. OIT No. 158</td><td><span class="badge badge-green">Conforme</span></td></tr>
+            <tr><td>Prescripción de acciones</td><td>Arts. 701–705 CT (1, 2 y 3 meses según tipo)</td><td>Principios OIT de tutela efectiva</td><td><span class="badge badge-green">Conforme</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note-box" style="margin-top:16px;background:rgba(139,175,212,0.08);border-left:3px solid var(--accent2);">
+          <strong style="color:var(--accent);">⚖️ ¿Por qué "Conforme Parcial" en Empleo Público?</strong><br>
+          <span style="font-style:normal;font-size:0.93rem;">El <strong>Principio III del CT</strong> excluye expresamente a los funcionarios y empleados públicos de su ámbito de aplicación, generando un vacío normativo. La <strong>Ley 41-08</strong> (Función Pública) llena parcialmente ese vacío con un régimen estatutario, pero <strong>sin negociación colectiva real</strong> para el sector público. El <strong>Convenio OIT No. 151 (1978)</strong> exige un sistema de relaciones laborales colectivas plenas para los servidores públicos. La República Dominicana <strong>no ha ratificado formalmente el Convenio 151</strong>, por lo que no tiene obligación jurídica internacional directa de subsanar esta brecha, aunque sí enfrenta una presión de estándar internacional constante. Esta es la razón de la conformidad parcial: hay legislación, pero no alcanza el estándar OIT en materia de negociación colectiva del sector público.</span>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Marco Normativo · UCADE · Derecho Laboral II · 2026</span><span class="page-num">12 / 13</span>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 13: TRIVIA ═══ -->
+  <div class="slide" id="slide-13">
+    <div class="slide-bg" style="background:linear-gradient(135deg,#07101f,#0c1a32);"></div>
+    <div class="glow" style="width:500px;height:500px;background:rgba(30,80,180,0.12);top:-150px;left:-100px;"></div>
+    <div class="glow" style="width:400px;height:400px;background:rgba(180,30,60,0.1);bottom:-100px;right:-80px;"></div>
+    <div class="slide-inner" style="padding:14px 28px 10px;">
+      <div id="trivia-root" style="height:100%;display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+    <div class="slide-footer">
+      <span>🏆 Trivia — Derecho Laboral II · CT Ley 16-92</span>
+      <span class="page-num">13 / 13</span>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- DOT NAV -->
+<div class="dot-nav" id="dotNav"></div>
+
+<script>
+  let current = 1;
+  const total = 13;
+  const titles = [
+    "Portada",
+    "Índice de Contenidos",
+    "3.1 — Los Conflictos de Trabajo",
+    "3.2 — Clasificación de los Conflictos",
+    "3.2.3 — Jurídicos vs. Económicos",
+    "3.3 — Solución: Conciliación y Arbitraje",
+    "3.3.4 — Comparación de Mecanismos",
+    "3.4 — Procedimiento Conflictos Colectivos",
+    "3.4 — Huelga y Servicios Esenciales",
+    "3.5 — Derecho Procesal del Trabajo",
+    "Glosario de Términos",
+    "Marco Normativo Comparado",
+    "🏆 Trivia Interactiva"
+  ];
+
+  // Build dots
+  const dotNav = document.getElementById('dotNav');
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.title = titles[i - 1];
+    d.onclick = () => goToSlide(i);
+    dotNav.appendChild(d);
+  }
+
+  function updateUI() {
+    document.getElementById('slideCounter').textContent = current + ' / ' + total;
+    document.getElementById('topbarTitle').textContent = titles[current - 1];
+    document.getElementById('prevBtn').disabled = current === 1;
+    document.getElementById('nextBtn').disabled = current === total;
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+  }
+
+  function goToSlide(n, dir) {
+    if (n === current || n < 1 || n > total) return;
+    if (n === 13 && !GAME.initialized) { setTimeout(() => GAME.init(), 50); }
+    if (current === 13) { GAME.pause(); }
+    const oldSlide = document.getElementById('slide-' + current);
+    const direction = dir !== undefined ? dir : (n > current ? 1 : -1);
+
+    // Remove active, add exit class
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+
+    current = n;
+    const newSlide = document.getElementById('slide-' + current);
+
+    // Position new slide off-screen
+    newSlide.classList.remove('exit-left', 'exit-right', 'enter-right', 'enter-left');
+    newSlide.classList.add(direction > 0 ? 'enter-right' : 'enter-left');
+
+    // Force reflow
+    newSlide.offsetHeight;
+
+    // Animate in
+    requestAnimationFrame(() => {
+      newSlide.classList.remove('enter-right', 'enter-left');
+      newSlide.classList.add('active');
+    });
+
+    // Clean up old slide after transition
+    setTimeout(() => {
+      oldSlide.classList.remove('exit-left', 'exit-right');
+    }, 600);
+
+    updateUI();
+  }
+
+  function changeSlide(dir) { goToSlide(current + dir, dir); }
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  });
+
+  // Touch/swipe
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) changeSlide(dx < 0 ? 1 : -1);
+  });
+
+  updateUI();
+</script>
+<script>
+/* ══════════════════════════════════════════
+   TRIVIA GAME — Derecho Laboral II · CT Ley 16-92
+   ══════════════════════════════════════════ */
+const GAME = {
+  initialized: false,
+  timerInterval: null,
+  timeLeft: 25,
+  currentQ: 0,
+  scores: { azul: 0, rojo: 0 },
+  phase: 'idle', /* idle | team | answered | second | over */
+  activeTeam: null,
+  secondTeam: null,
+
+  questions: [
+    { q: '¿Qué artículo del CT Ley 16-92 define el "conflicto económico"?',
+      opts: ['Art. 388 CT','Art. 395 CT','Art. 401 CT','Art. 674 CT'], ans: 1 },
+    { q: 'Según el Art. 397 CT, los conflictos económicos se resuelven mediante:',
+      opts: ['Solo arbitraje obligatorio','Solo vía judicial','Avenimiento directo, conciliación administrativa o arbitraje','Huelga o paro como primera vía'], ans: 2 },
+    { q: '¿Cuántos días mínimo de preaviso exige el Art. 407 CT para declarar una huelga?',
+      opts: ['5 días','10 días','15 días','30 días'], ans: 1 },
+    { q: '¿Cuántos días mínimo de preaviso exige el Art. 414 CT para el paro patronal?',
+      opts: ['5 días','10 días','15 días','20 días'], ans: 2 },
+    { q: '¿Qué porcentaje mínimo de trabajadores debe votar la huelga (Art. 407 CT)?',
+      opts: ['33%','50%','75%','Más del 51%'], ans: 3 },
+    { q: '¿Cuántos árbitros se designan para resolver un conflicto económico (Art. 680 CT)?',
+      opts: ['1','2','3','5'], ans: 2 },
+    { q: '¿En cuántos días deben emitir el laudo los árbitros (Art. 696 CT)?',
+      opts: ['3 días','5 días','8 días','15 días'], ans: 2 },
+    { q: 'Según el Art. 698 CT, el laudo arbitral laboral está sujeto a:',
+      opts: ['Recurso de apelación','Recurso de casación ante la SCJ','Ningún recurso — es irrecurrible','Recurso administrativo ante el MT'], ans: 2 },
+    { q: 'Según el Art. 699 CT, el laudo arbitral produce los efectos de:',
+      opts: ['Una sentencia judicial','Un decreto del Poder Ejecutivo','Un convenio colectivo de condiciones de trabajo','Un acto administrativo del MT'], ans: 2 },
+    { q: '¿En qué plazo prescriben las horas extras (Art. 701 CT)?',
+      opts: ['1 mes','2 meses','3 meses','1 año'], ans: 0 },
+    { q: '¿Cuál es el plazo de prescripción por despido o cesantía (Art. 702 CT)?',
+      opts: ['1 mes','2 meses','3 meses','6 meses'], ans: 1 },
+    { q: '¿En qué plazo prescriben "las demás acciones" laborales (Art. 703 CT)?',
+      opts: ['1 mes','2 meses','3 meses','6 meses'], ans: 2 },
+    { q: 'Según el Art. 404 CT, ¿cuáles son servicios esenciales?',
+      opts: ['Comercio, bancos e industria','Comunicaciones, agua, electricidad, farmacéuticos y hospitales','Transporte y educación','Solo hospitales y cuerpo de bomberos'], ans: 1 },
+    { q: '¿Qué Principio del CT instituye la conciliación como etapa obligatoria previa al proceso?',
+      opts: ['Principio V','Principio VIII','Principio X','Principio XIII'], ans: 3 },
+    { q: '¿Qué Principio del CT consagra el "in dubio pro operario"?',
+      opts: ['Principio III','Principio V','Principio VIII','Principio XII'], ans: 2 },
+    { q: '¿Cuántos integrantes tiene un Juzgado de Trabajo (Art. 467 CT)?',
+      opts: ['1 juez unipersonal','1 juez + 2 vocales','3 jueces colegiados','5 jueces'], ans: 1 },
+    { q: '¿Cuántos jueces compone la Corte de Trabajo (Art. 473 CT, mod. Ley 142-98)?',
+      opts: ['3 jueces','5 jueces + 2 vocales','7 jueces','9 jueces'], ans: 1 },
+    { q: '¿Qué artículo del CT prohíbe conocer demandas sin previo intento de conciliación?',
+      opts: ['Art. 394 CT','Art. 487 CT','Art. 503 CT','Art. 674 CT'], ans: 1 },
+    { q: '¿Cuál es la duración mínima de un avenimiento, conciliación o laudo (Art. 399 CT)?',
+      opts: ['6 meses','1 año','18 meses','3 años'], ans: 1 },
+    { q: 'Según el Art. 411 CT, la huelga legal tiene este efecto sobre el contrato de trabajo:',
+      opts: ['Lo termina definitivamente','Genera derecho a salarios retroactivos','Solo lo suspende temporalmente','Obliga al empleador a renegociar salarios'], ans: 2 }
+  ],
+
+  pause() { clearInterval(this.timerInterval); },
+
+  init() {
+    if (this.initialized) return;
+    this.initialized = true;
+    this.render();
+    this.startQuestion();
+  },
+
+  render() {
+    const root = document.getElementById('trivia-root');
+    root.innerHTML = `
+      <div id="g-scoreboard" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div id="g-score-azul" style="flex:1;background:rgba(30,100,220,0.18);border:2px solid rgba(50,130,255,0.5);border-radius:14px;padding:10px 18px;text-align:center;">
+          <div style="font-size:0.7rem;letter-spacing:2px;color:#6ab0ff;text-transform:uppercase;font-weight:700;">🔵 Equipo Azul</div>
+          <div id="g-pts-azul" style="font-size:2.2rem;font-weight:900;color:#fff;font-family:'Playfair Display',serif;">0</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div id="g-qnum" style="font-size:0.75rem;color:var(--muted);letter-spacing:1px;">PREGUNTA</div>
+          <div id="g-qcount" style="font-size:1.6rem;font-weight:800;color:var(--white);">1 / 20</div>
+          <div style="margin-top:6px;position:relative;width:60px;height:60px;margin:6px auto 0;">
+            <svg width="60" height="60" style="transform:rotate(-90deg);">
+              <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5"/>
+              <circle id="g-timer-ring" cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="5"
+                stroke-dasharray="163.4" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear,stroke 0.3s;"/>
+            </svg>
+            <div id="g-timer-num" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:var(--white);">25</div>
+          </div>
+        </div>
+        <div id="g-score-rojo" style="flex:1;background:rgba(200,40,60,0.15);border:2px solid rgba(220,60,80,0.5);border-radius:14px;padding:10px 18px;text-align:center;">
+          <div style="font-size:0.7rem;letter-spacing:2px;color:#ff7a8a;text-transform:uppercase;font-weight:700;">🔴 Equipo Rojo</div>
+          <div id="g-pts-rojo" style="font-size:2.2rem;font-weight:900;color:#fff;font-family:'Playfair Display',serif;">0</div>
+        </div>
+      </div>
+
+      <div id="g-question" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.13);border-radius:14px;padding:16px 22px;flex-shrink:0;">
+        <div id="g-qtext" style="font-size:1.15rem;font-weight:600;color:var(--white);line-height:1.5;font-family:'Playfair Display',serif;"></div>
+      </div>
+
+      <div id="g-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;"></div>
+
+      <div id="g-teams" style="display:flex;gap:10px;">
+        <button id="g-btn-azul" onclick="GAME.assignTeam('azul')"
+          style="flex:1;padding:12px;border-radius:50px;border:2px solid rgba(50,130,255,0.6);background:rgba(30,100,220,0.15);color:#6ab0ff;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:var(--sans);">
+          👆 Turno Equipo Azul
+        </button>
+        <button id="g-btn-rojo" onclick="GAME.assignTeam('rojo')"
+          style="flex:1;padding:12px;border-radius:50px;border:2px solid rgba(220,60,80,0.6);background:rgba(200,40,60,0.12);color:#ff7a8a;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:var(--sans);">
+          👆 Turno Equipo Rojo
+        </button>
+      </div>
+
+      <div id="g-feedback" style="min-height:52px;border-radius:12px;padding:10px 18px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:600;text-align:center;"></div>
+
+      <div style="display:flex;justify-content:center;">
+        <button id="g-next" onclick="GAME.nextQuestion()" style="display:none;padding:10px 40px;border-radius:50px;border:2px solid var(--accent);background:rgba(201,168,76,0.15);color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--sans);">
+          Siguiente Pregunta ▶
+        </button>
+      </div>
+    `;
+  },
+
+  startQuestion() {
+    if (this.currentQ >= this.questions.length) { this.showGameOver(); return; }
+    const q = this.questions[this.currentQ];
+    this.phase = 'idle';
+    this.activeTeam = null;
+    this.secondTeam = null;
+    this.timeLeft = 25;
+
+    document.getElementById('g-qcount').textContent = (this.currentQ + 1) + ' / 20';
+    document.getElementById('g-qtext').textContent = q.q;
+    document.getElementById('g-feedback').textContent = '';
+    document.getElementById('g-feedback').style.background = 'transparent';
+    document.getElementById('g-next').style.display = 'none';
+    const btnA = document.getElementById('g-btn-azul');
+    const btnR = document.getElementById('g-btn-rojo');
+    btnA.disabled = false; btnA.style.opacity = '1';
+    btnA.textContent = '👆 Turno Equipo Azul';
+    btnA.onclick = () => GAME.assignTeam('azul');
+    btnR.disabled = false; btnR.style.opacity = '1';
+    btnR.textContent = '👆 Turno Equipo Rojo';
+    btnR.onclick = () => GAME.assignTeam('rojo');
+
+    /* render options */
+    const opts = document.getElementById('g-options');
+    const labels = ['A','B','C','D'];
+    opts.innerHTML = q.opts.map((o,i) => `
+      <button id="g-opt-${i}" onclick="GAME.selectAnswer(${i})" disabled
+        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:var(--white);font-size:0.95rem;cursor:not-allowed;text-align:left;font-family:var(--sans);transition:all 0.2s;line-height:1.35;">
+        <span style="color:var(--accent);font-weight:700;margin-right:8px;">${labels[i]})</span>${o}
+      </button>`).join('');
+
+    this.updateTimerRing();
+    clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      this.timeLeft--;
+      document.getElementById('g-timer-num').textContent = this.timeLeft;
+      this.updateTimerRing();
+      if (this.timeLeft <= 5) {
+        const ring = document.getElementById('g-timer-ring');
+        if (ring) ring.style.stroke = '#e05555';
+        const tn = document.getElementById('g-timer-num');
+        if (tn) tn.style.color = '#e05555';
+      }
+      if (this.timeLeft <= 0) {
+        clearInterval(this.timerInterval);
+        if (this.phase === 'idle') {
+          this.showFeedback('⏰ Tiempo agotado — sin puntos. Se avanza a la siguiente.', '#888', false);
+          document.getElementById('g-next').style.display = 'inline-block';
+          this.highlightCorrect();
+          document.getElementById('g-btn-azul').disabled = true;
+          document.getElementById('g-btn-rojo').disabled = true;
+        }
+      }
+    }, 1000);
+  },
+
+  updateTimerRing() {
+    const ring = document.getElementById('g-timer-ring');
+    if (!ring) return;
+    const total = 25, r = 26, circ = 2 * Math.PI * r;
+    const offset = circ * (1 - this.timeLeft / total);
+    ring.style.strokeDashoffset = offset;
+  },
+
+  assignTeam(team) {
+    if (this.phase !== 'idle') return;
+    clearInterval(this.timerInterval);
+    this.phase = 'team';
+    this.activeTeam = team;
+    this.secondTeam = team === 'azul' ? 'rojo' : 'azul';
+    const color = team === 'azul' ? '#6ab0ff' : '#ff7a8a';
+    const name = team === 'azul' ? '🔵 Equipo Azul' : '🔴 Equipo Rojo';
+    this.showFeedback(`Turno de ${name} — Selecciona la respuesta`, color, false);
+    document.getElementById('g-btn-azul').disabled = true;
+    document.getElementById('g-btn-rojo').disabled = true;
+    document.getElementById('g-btn-azul').style.opacity = '0.4';
+    document.getElementById('g-btn-rojo').style.opacity = '0.4';
+    /* enable options */
+    for (let i = 0; i < 4; i++) {
+      const btn = document.getElementById('g-opt-' + i);
+      if (btn) { btn.disabled = false; btn.style.cursor = 'pointer'; }
+    }
+    /* highlight active team */
+    const scoreEl = document.getElementById('g-score-' + team);
+    if (scoreEl) { scoreEl.style.boxShadow = `0 0 20px ${color}55`; scoreEl.style.transform = 'scale(1.04)'; }
+  },
+
+  selectAnswer(idx) {
+    if (this.phase !== 'team' && this.phase !== 'second') return;
+    const q = this.questions[this.currentQ];
+    const correct = idx === q.ans;
+    /* disable all options */
+    for (let i = 0; i < 4; i++) {
+      const b = document.getElementById('g-opt-' + i); if (b) b.disabled = true;
+    }
+    if (correct) {
+      this.scores[this.activeTeam]++;
+      document.getElementById('g-pts-' + this.activeTeam).textContent = this.scores[this.activeTeam];
+      this.highlightOption(idx, true);
+      this.highlightTeamWin(this.activeTeam);
+      const name = this.activeTeam === 'azul' ? '🔵 Equipo Azul' : '🔴 Equipo Rojo';
+      this.showFeedback(`✅ ¡Correcto! +1 punto para ${name}`, '#4caf82', true);
+      document.getElementById('g-next').style.display = 'inline-block';
+      this.phase = 'answered';
+    } else {
+      this.highlightOption(idx, false);
+      /* deshabilitar todas las opciones mientras se decide segundo turno */
+      for (let i = 0; i < 4; i++) {
+        const b = document.getElementById('g-opt-' + i);
+        if (b) { b.disabled = true; b.style.cursor = 'not-allowed'; }
+      }
+      if (this.phase === 'team') {
+        const secondTeamId = this.secondTeam;
+        const otherName = secondTeamId === 'azul' ? '🔵 Equipo Azul' : '🔴 Equipo Rojo';
+        const secColor = secondTeamId === 'azul' ? '#6ab0ff' : '#ff7a8a';
+        this.showFeedback(`❌ Incorrecto. ¿Desea responder ${otherName}?`, '#e05555', false);
+        this.phase = 'second';
+        /* resetear marcador del equipo que falló */
+        const activeScoreEl = document.getElementById('g-score-' + this.activeTeam);
+        if (activeScoreEl) { activeScoreEl.style.boxShadow = 'none'; activeScoreEl.style.transform = 'none'; }
+        this.activeTeam = secondTeamId;
+        /* habilitar solo el botón del segundo equipo */
+        const btnFirst = document.getElementById('g-btn-' + (secondTeamId === 'azul' ? 'rojo' : 'azul'));
+        if (btnFirst) { btnFirst.disabled = true; btnFirst.style.opacity = '0.3'; }
+        const teamBtn = document.getElementById('g-btn-' + secondTeamId);
+        if (teamBtn) {
+          teamBtn.disabled = false;
+          teamBtn.style.opacity = '1';
+          teamBtn.textContent = `👆 Responder ${otherName}`;
+          teamBtn.onclick = () => {
+            teamBtn.disabled = true; teamBtn.style.opacity = '0.4';
+            const secScoreEl = document.getElementById('g-score-' + secondTeamId);
+            if (secScoreEl) { secScoreEl.style.boxShadow = `0 0 20px ${secColor}55`; secScoreEl.style.transform = 'scale(1.04)'; }
+            /* habilitar opciones excepto la ya incorrecta */
+            for (let i = 0; i < 4; i++) {
+              const b = document.getElementById('g-opt-' + i);
+              if (b && i !== idx) { b.disabled = false; b.style.cursor = 'pointer'; }
+            }
+            this.showFeedback(`Turno de ${otherName} — Selecciona la respuesta`, secColor, false);
+          };
+        };
+      } else {
+        /* second team also wrong */
+        this.highlightCorrect();
+        this.showFeedback('❌ Sin puntos. La respuesta correcta está marcada en verde.', '#888', false);
+        document.getElementById('g-next').style.display = 'inline-block';
+        this.phase = 'answered';
+        const secEl = document.getElementById('g-score-' + this.secondTeam);
+        if (secEl) { secEl.style.boxShadow = 'none'; secEl.style.transform = 'none'; }
+      }
+    }
+  },
+
+  highlightOption(idx, correct) {
+    const btn = document.getElementById('g-opt-' + idx);
+    if (!btn) return;
+    btn.style.background = correct ? 'rgba(39,174,96,0.3)' : 'rgba(200,80,80,0.3)';
+    btn.style.border = correct ? '1.5px solid #4caf82' : '1.5px solid #e05555';
+  },
+
+  highlightCorrect() {
+    const q = this.questions[this.currentQ];
+    this.highlightOption(q.ans, true);
+  },
+
+  highlightTeamWin(team) {
+    const el = document.getElementById('g-score-' + team);
+    const color = team === 'azul' ? '#6ab0ff' : '#ff7a8a';
+    if (el) { el.style.boxShadow = `0 0 30px ${color}88`; el.style.transform = 'scale(1.06)'; }
+    setTimeout(() => { if (el) { el.style.boxShadow = 'none'; el.style.transform = 'none'; } }, 1200);
+  },
+
+  showFeedback(msg, color, bold) {
+    const fb = document.getElementById('g-feedback');
+    if (!fb) return;
+    fb.textContent = msg;
+    fb.style.color = color;
+    fb.style.background = bold ? color + '18' : 'rgba(255,255,255,0.03)';
+    fb.style.border = bold ? `1px solid ${color}44` : '1px solid rgba(255,255,255,0.08)';
+  },
+
+  nextQuestion() {
+    /* reset score box styles */
+    ['azul','rojo'].forEach(t => {
+      const el = document.getElementById('g-score-' + t);
+      if (el) { el.style.boxShadow = 'none'; el.style.transform = 'none'; }
+    });
+    this.currentQ++;
+    if (this.currentQ >= this.questions.length) { this.showGameOver(); return; }
+    this.startQuestion();
+  },
+
+  showGameOver() {
+    clearInterval(this.timerInterval);
+    this.phase = 'over';
+    const azul = this.scores.azul, rojo = this.scores.rojo;
+    let winner, winColor, loser, prize;
+    if (azul > rojo) { winner = '🔵 Equipo Azul'; winColor = '#6ab0ff'; loser = '🔴 Equipo Rojo'; }
+    else if (rojo > azul) { winner = '🔴 Equipo Rojo'; winColor = '#ff7a8a'; loser = '🔵 Equipo Azul'; }
+    else { winner = null; winColor = 'var(--accent)'; }
+
+    const root = document.getElementById('trivia-root');
+    root.innerHTML = `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:10px 0;">
+        <div style="font-size:3.5rem;">${winner ? '🏆' : '🤝'}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,3rem);font-weight:900;color:${winColor};line-height:1.1;">
+          ${winner ? winner : '¡Empate!'}
+        </div>
+        ${winner ? `<div style="font-size:1.1rem;color:var(--muted);">¡Felicitaciones al equipo ganador!</div>` : `<div style="font-size:1.1rem;color:var(--muted);">¡Ambos equipos demostraron su dominio del CT!</div>`}
+        <div style="display:flex;gap:28px;margin:6px 0;">
+          <div style="background:rgba(30,100,220,0.18);border:2px solid rgba(50,130,255,0.5);border-radius:14px;padding:16px 36px;">
+            <div style="font-size:0.7rem;letter-spacing:2px;color:#6ab0ff;text-transform:uppercase;font-weight:700;">🔵 Equipo Azul</div>
+            <div style="font-size:3rem;font-weight:900;color:#fff;font-family:'Playfair Display',serif;">${azul}</div>
+          </div>
+          <div style="background:rgba(200,40,60,0.15);border:2px solid rgba(220,60,80,0.5);border-radius:14px;padding:16px 36px;">
+            <div style="font-size:0.7rem;letter-spacing:2px;color:#ff7a8a;text-transform:uppercase;font-weight:700;">🔴 Equipo Rojo</div>
+            <div style="font-size:3rem;font-weight:900;color:#fff;font-family:'Playfair Display',serif;">${rojo}</div>
+          </div>
+        </div>
+        <div style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.4);border-radius:16px;padding:18px 32px;max-width:520px;">
+          <div style="font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:700;">🎁 Premio del Equipo Ganador</div>
+          <div style="font-size:1rem;color:var(--white);line-height:1.6;">${winner ? `Un ejemplar de un libro de Derecho<br>de la <strong>Facilitadora Ivelisse María Ureña</strong><br>+ <strong style="color:var(--accent);font-size:1.15rem;">3 puntos extras</strong> en el próximo parcial` : `¡Premio compartido para ambos equipos!<br>Consultar con la Facilitadora.`}</div>
+        </div>
+        <button onclick="GAME.restart()" style="margin-top:4px;padding:10px 36px;border-radius:50px;border:2px solid var(--accent);background:rgba(201,168,76,0.12);color:var(--accent);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--sans);">
+          🔄 Jugar de nuevo
+        </button>
+      </div>`;
+  },
+
+  restart() {
+    this.currentQ = 0;
+    this.scores = { azul: 0, rojo: 0 };
+    this.phase = 'idle';
+    this.activeTeam = null;
+    this.secondTeam = null;
+    this.timeLeft = 25;
+    clearInterval(this.timerInterval);
+    this.render();
+    this.startQuestion();
+  }
+};
+</script>
+</body>
+</html>
